@@ -6,10 +6,12 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class TikTokDownloaderV2 {
-    public void download(String fileLocation, String videoUrl) throws IOException {
+    public String download(String videoUrl) throws IOException {
+        String fileLocation = "C:\\Users\\admin\\Downloads\\tiktok\\TikTok_" + System.currentTimeMillis() + ".mp4";
         URL url = new URL(videoUrl);
         //Create a URL connection
         URLConnection conn = url.openConnection();
@@ -66,6 +68,7 @@ public class TikTokDownloaderV2 {
 
         //Now that we have the Thumbnail and Video URL, we can download them!
         downloadVideoFile(fileLocation, contentURL);
+        return fileLocation;
     }
 
     /*
@@ -100,5 +103,11 @@ public class TikTokDownloaderV2 {
 
         //Done message
         System.out.println("Video Downloaded!");
+    }
+
+    public void clearWaterMark(String input, String fileName) throws IOException, InterruptedException {
+        String output = "target\\" + fileName + ".mp4";
+        String cmd1 = "C:\\ffmpeg\\bin\\ffmpeg.exe -y -i " + input  + " -vf -filter:v \"crop=540:870:0:80\" -preset ultrafast -c:a copy " + output;
+        Runtime.getRuntime().exec(cmd1).waitFor(5, TimeUnit.SECONDS);
     }
 }
