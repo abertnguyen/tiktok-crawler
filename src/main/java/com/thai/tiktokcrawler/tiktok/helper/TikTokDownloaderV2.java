@@ -3,15 +3,13 @@ package com.thai.tiktokcrawler.tiktok.helper;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class TikTokDownloaderV2 {
     public String download(String videoUrl) throws IOException {
-        String fileLocation = "C:\\Users\\admin\\Downloads\\tiktok\\TikTok_" + System.currentTimeMillis() + ".mp4";
+        String fileLocation = "C:\\Users\\user\\Downloads\\tiktok\\intput.mp4";
         URL url = new URL(videoUrl);
         //Create a URL connection
         URLConnection conn = url.openConnection();
@@ -105,9 +103,19 @@ public class TikTokDownloaderV2 {
         System.out.println("Video Downloaded!");
     }
 
-    public void clearWaterMark(String input, String fileName) throws IOException, InterruptedException {
-        String output = "target\\" + fileName + ".mp4";
-        String cmd1 = "C:\\ffmpeg\\bin\\ffmpeg.exe -y -i " + input  + " -vf -filter:v \"crop=540:870:0:80\" -preset ultrafast -c:a copy " + output;
-        Runtime.getRuntime().exec(cmd1).waitFor(5, TimeUnit.SECONDS);
+    public void clearWaterMark(String input, String fileName, String header, String footer) throws IOException {
+        String output = "E:\\personal\\tiktok-crawler\\des\\" + fileName + ".mp4";
+        String cmd = "C:\\ffmpeg\\bin\\ffmpeg.exe -y -i " + input + " -vf \"drawbox=0:0:iw:75:black@1:t=fill,drawbox=0:ih-75:iw:75:black@1:t=fill," +
+                "drawtext=fontfile=/Windows/Fonts/Roboto-Bold.ttf: text='" + header + "': fontcolor=white: fontsize=35: x=(w-tw)/2:y=35, " +
+                "drawtext=fontfile=/Windows/Fonts/Roboto-Bold.ttf: text='" + footer + "': fontcolor=white: fontsize=35:x=(w-tw)/2: y=(h-text_h)-35\" -codec:a copy -preset" +
+                " ultrafast -c:a copy " + output;
+        Process p = Runtime.getRuntime().exec(cmd);
+        InputStreamReader isr = new InputStreamReader(p.getErrorStream());
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+        System.out.println("done");
     }
 }

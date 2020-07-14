@@ -11,10 +11,13 @@ import java.io.IOException;
 @AllArgsConstructor
 public class DownloadController {
     private TikTokDownloaderV2 tikTokDownloaderV2;
-    @GetMapping("/{url}")
-    public String download(@PathVariable("url") String url, @RequestParam("name") String name) throws IOException, InterruptedException {
+    @GetMapping()
+    public String download(@RequestParam("url") String url,
+                           @RequestParam("file_name") String fileName,
+                           @RequestParam("header") String header,
+                           @RequestParam("footer") String footer) throws IOException, InterruptedException {
         String fileLocation = tikTokDownloaderV2.download(url);
-        tikTokDownloaderV2.clearWaterMark(fileLocation, name);
+        tikTokDownloaderV2.clearWaterMark(fileLocation, fileName, header, footer);
         return "OK";
     }
 }
