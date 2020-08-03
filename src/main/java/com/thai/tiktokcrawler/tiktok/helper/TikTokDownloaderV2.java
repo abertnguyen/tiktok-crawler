@@ -9,7 +9,8 @@ import java.net.URLConnection;
 @Component
 public class TikTokDownloaderV2 {
     public String download(String videoUrl) throws IOException {
-        String fileLocation = "C:\\Users\\user\\Downloads\\tiktok\\intput.mp4";
+//        String fileLocation = "C:\\Users\\user\\Downloads\\tiktok\\intput.mp4";
+        String fileLocation = "C:\\Users\\admin\\Downloads\\tiktok\\input.mp4";
         URL url = new URL(videoUrl);
         //Create a URL connection
         URLConnection conn = url.openConnection();
@@ -104,8 +105,8 @@ public class TikTokDownloaderV2 {
     }
 
     public void clearWaterMark(String input, String fileName, String header, String footer) throws IOException {
-        String output = "E:\\personal\\tiktok-crawler\\des\\" + fileName + ".mp4";
-        String cmd = "C:\\ffmpeg\\bin\\ffmpeg.exe -y -i " + input + " -vf \"drawbox=0:0:iw:75:black@1:t=fill,drawbox=0:ih-75:iw:75:black@1:t=fill," +
+        String output = "des\\" + fileName + ".mp4";
+        String cmd = "C:\\ffmpeg\\bin\\ffmpeg.exe -y -i " + input + " -vf \"drawbox=0:0:iw:75:pink@1:t=fill,drawbox=0:ih-75:iw:75:pink@1:t=fill," +
                 "drawtext=fontfile=/Windows/Fonts/Roboto-Bold.ttf: text='" + header + "': fontcolor=white: fontsize=35: x=(w-tw)/2:y=35, " +
                 "drawtext=fontfile=/Windows/Fonts/Roboto-Bold.ttf: text='" + footer + "': fontcolor=white: fontsize=35:x=(w-tw)/2: y=(h-text_h)-35\" -codec:a copy -preset" +
                 " ultrafast -c:a copy " + output;
