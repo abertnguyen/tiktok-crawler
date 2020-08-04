@@ -21,6 +21,10 @@ public class TelegramHelper {
         sendMessage(message, "HTML");
     }
 
+    public void sendMarkdownMessage(String message) {
+        sendMessage(message, "Markdown");
+    }
+
     public void sendMessage(String message, String parseMode) {
         try {
             String url = "https://api.telegram.org/bot1356869800:AAFhDHMUFIBlgnp9FWLzsvy8zNxzufXkWFs/sendMessage?chat_id=-440199512&text={text}";
