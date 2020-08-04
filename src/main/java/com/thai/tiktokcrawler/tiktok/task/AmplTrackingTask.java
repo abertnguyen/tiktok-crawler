@@ -32,6 +32,7 @@ public class AmplTrackingTask {
     @Scheduled(fixedDelay = 10000)
     public void trackingAmplTransaction() throws IOException {
         Setting setting = settingRepository.findFirstByKey("MAX_TIME_REQUEST");
+        Double limitNotify = settingRepository.findFirstByKey("LIMIT_NOTIFICATION").getValueAsDouble();
         String maxTimeRequest = setting.getValue();
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = getDefaultHeaders();
@@ -43,7 +44,7 @@ public class AmplTrackingTask {
             SwapResponse swapResponse = responseEntity.getBody();
             if(swapResponse.getData() != null && !CollectionUtils.isEmpty(swapResponse.getData().getSwaps())) {
                 for(SwapElement swapElement : swapResponse.getData().getSwaps()) {
-                    if(swapElement.getAmount0In() > 50d || swapElement.getAmount0Out() > 50d) {
+                    if(swapElement.getAmount0In() >= limitNotify || swapElement.getAmount0Out() >= limitNotify) {
                         String type = swapElement.getAmount0In() > 0 ? "Bought" : "Sold";
                         Map<String, Object> data = new HashMap<>();
                         data.put("type", "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB" + type + "\uD83D\uDCB0");

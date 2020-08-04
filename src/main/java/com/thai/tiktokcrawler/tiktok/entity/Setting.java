@@ -23,7 +23,7 @@ public class Setting {
     @Column(name = "value")
     private String value;
 
-    private long getValueAsLong() {
-        return Long.valueOf(value);
+    public Double getValueAsDouble() {
+        return Double.valueOf(value);
     }
 }
