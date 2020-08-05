@@ -48,16 +48,24 @@ public class AmplTrackingTrendingTask {
             telegramHelper.sendHTMLMessage(message);
         }
         if (totalBought / totalSold > rateToNoti) {
-            data.put("trending", "Boughtttt");
+            data.put("trending", getCirleByRate("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB", (int) (totalBought/totalSold)));
             data.put("rate", round(totalBought / totalSold));
             String message = telegramMessageTemplate.load("ampl-tracking-trend.html", data);
             telegramHelper.sendHTMLMessage(message);
         } else if (totalSold / totalBought > rateToNoti) {
-            data.put("trending", "Soldddddd");
+            data.put("trending", getCirleByRate("\uD83D\uDC79", (int) (totalBought/totalSold)));
             data.put("rate", round(totalSold / totalBought));
             String message = telegramMessageTemplate.load("ampl-tracking-trend.html", data);
             telegramHelper.sendHTMLMessage(message);
         }
+    }
+
+    public String getCirleByRate(String icon, int number) {
+        String x = "";
+        for(int i = 0 ; i < number; i++) {
+            x += icon;
+        }
+        return x;
     }
 
     public Double totalBought(int limit, Double amountUsd) {
