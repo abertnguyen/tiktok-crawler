@@ -5,6 +5,7 @@ import lombok.*;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.util.Date;
 
 @Entity
 @Table(name = "transaction_history")
@@ -28,4 +29,6 @@ public class TransactionHistory extends BaseEntity {
     private String toAddress;
     @Column(name = "tx_id")
     private String txId;
+    @Column(name = "created_time_tx")
+    private Date createdTimeTx;
 }

@@ -1,8 +1,10 @@
 package com.thai.tiktokcrawler.tiktok.task;
 
 import com.thai.tiktokcrawler.tiktok.entity.Setting;
+import com.thai.tiktokcrawler.tiktok.entity.TransactionHistory;
 import com.thai.tiktokcrawler.tiktok.helper.TelegramHelper;
 import com.thai.tiktokcrawler.tiktok.repository.SettingRepository;
+import com.thai.tiktokcrawler.tiktok.repository.TransactionHistoryRepository;
 import com.thai.tiktokcrawler.tiktok.response.SwapElement;
 import com.thai.tiktokcrawler.tiktok.response.SwapResponse;
 import com.thai.tiktokcrawler.tiktok.util.TelegramMessageTemplate;
@@ -17,10 +19,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 @AllArgsConstructor
@@ -29,6 +28,7 @@ public class AmplTrackingTask {
     private SettingRepository settingRepository;
     private TelegramHelper telegramHelper;
     private TelegramMessageTemplate telegramMessageTemplate;
+    private TransactionHistoryRepository transactionHistoryRepository;
     @Scheduled(fixedDelay = 10000)
     public void trackingAmplTransaction() throws IOException {
         Setting setting = settingRepository.findFirstByKey("MAX_TIME_REQUEST");
@@ -43,7 +43,19 @@ public class AmplTrackingTask {
         if(responseEntity.getStatusCode().equals(HttpStatus.OK)) {
             SwapResponse swapResponse = responseEntity.getBody();
             if(swapResponse.getData() != null && !CollectionUtils.isEmpty(swapResponse.getData().getSwaps())) {
+                List<TransactionHistory> transactionHistoryList = new ArrayList<>();
                 for(SwapElement swapElement : swapResponse.getData().getSwaps()) {
+                    TransactionHistory transactionHistory = TransactionHistory.builder()
+                            .ethAmount(swapElement.getAmount0In() > 0 ? swapElement.getAmount0In() : swapElement.getAmount0Out())
+                            .amplAmount(swapElement.getAmount1In() >0 ? swapElement.getAmount1In() : swapElement.getAmount1Out())
+                            .type(swapElement.getAmount0In() > 0 ? "Bought" : "Sold")
+                            .fromAddress(swapElement.getSender())
+                            .toAddress(swapElement.getTo())
+                            .txId(swapElement.getTransaction().getId())
+                            .usdAmount(swapElement.getAmountUSD())
+                            .createdTimeTx(new Date(swapElement.getTimestamp() * 1000))
+                            .build();
+                    transactionHistoryList.add(transactionHistory);
                     if(swapElement.getAmount0In() >= limitNotify || swapElement.getAmount0Out() >= limitNotify) {
                         String type = swapElement.getAmount0In() > 0 ? "Bought" : "Sold";
                         Map<String, Object> data = new HashMap<>();
@@ -69,16 +81,44 @@ public class AmplTrackingTask {
                         }
                         data.put("usdValue", round(swapElement.getAmountUSD()));
                         data.put("time", simpleDateTime(new Date(swapElement.getTimestamp() * 1000)));
-//                        data.put("transactionId", swapElement.getTransaction().getId());
+                        data.put("txId", swapElement.getTransaction().getId());
+                        data.put("totalBought", round(totalBought(30, swapElement.getAmountUSD())));
+                        data.put("totalSold", round(totalSold(30, swapElement.getAmountUSD())));
                         String message = telegramMessageTemplate.load("ampl-tracking.html", data);
                         telegramHelper.sendHTMLMessage(message);
                     }
                     maxTimeRequest = "" + swapElement.getTimestamp();
                 }
+                transactionHistoryRepository.saveAll(transactionHistoryList);
             }
         }
         setting.setValue(maxTimeRequest);
         settingRepository.save(setting);
+    }
+
+    public Double totalBought(int limit, Double amountUsd) {
+        return getTotalByType(limit, amountUsd, "Bought");
+    }
+
+    public Double totalSold(int limit, Double amountUsd) {
+        return getTotalByType(limit, amountUsd, "Sold");
+    }
+
+    public Double getTotalByType(int limit, Double amountUsd, String type) {
+        Date date = add(new Date(), -limit, Calendar.MINUTE);
+        Double amount = amountUsd;
+        List<TransactionHistory> transactionHistoryList = transactionHistoryRepository.findAllByTypeAndCreatedTimeTxBetween(type, date, new Date());
+        for(TransactionHistory transactionHistory : transactionHistoryList) {
+            amount += transactionHistory.getUsdAmount();
+        }
+        return amount;
+    }
+
+    public static Date add(Date date, int unit, int calendar) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(calendar, unit); //minus number would decrement the days
+        return cal.getTime();
     }
 
     public HttpHeaders getDefaultHeaders() {

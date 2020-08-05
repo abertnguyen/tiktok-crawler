@@ -1,9 +1,6 @@
 package com.thai.tiktokcrawler.tiktok.helper;
 
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -32,8 +29,9 @@ public class TelegramHelper {
             params.put("text", message);
 
             if (parseMode != null) {
-                url += "&parse_mode={parse_mode}";
+                url += "&parse_mode={parse_mode}&disable_web_page_preview={disable_web_page_preview}";
                 params.put("parse_mode", parseMode);
+                params.put("disable_web_page_preview", "true");
             }
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getForObject(url, String.class, params);
