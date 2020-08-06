@@ -26,7 +26,7 @@ public class AmplTrackingTrendingTask {
     private TelegramMessageTemplate telegramMessageTemplate;
     private TransactionHistoryRepository transactionHistoryRepository;
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 300000)
     public void trackingAmplTransaction() throws IOException {
         Double timeToTracking = settingRepository.findFirstByKey("TIME_TO_TRACKING").getValueAsDouble();
         Double rateToNoti = settingRepository.findFirstByKey("RATE_TO_NOTI").getValueAsDouble();
@@ -37,6 +37,7 @@ public class AmplTrackingTrendingTask {
         data.put("totalSold", totalSold);
         data.put("timeToTracking", timeToTracking);
         if (totalBought == 0d && totalSold == 0d) return;
+        if(totalBought < 100000d && totalSold < 100000d) return;
         if (totalBought == 0d && totalSold > 0) {
             data.put("trending", "SOLDDDDDD");
             String message = telegramMessageTemplate.load("ampl-tracking-trend.html", data);
@@ -48,12 +49,12 @@ public class AmplTrackingTrendingTask {
             telegramHelper.sendHTMLMessage(message);
         }
         if (totalBought / totalSold > rateToNoti) {
-            data.put("trending", getCirleByRate("\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB", (int) (totalBought/totalSold)));
+            data.put("trending", getCirleByRate("\uD83D\uDFE2", (int) (totalBought/totalSold)));
             data.put("rate", round(totalBought / totalSold));
             String message = telegramMessageTemplate.load("ampl-tracking-trend.html", data);
             telegramHelper.sendHTMLMessage(message);
         } else if (totalSold / totalBought > rateToNoti) {
-            data.put("trending", getCirleByRate("\uD83D\uDC79", (int) (totalBought/totalSold)));
+            data.put("trending", getCirleByRate("\uD83D\uDD34", (int) (totalSold/totalBought)));
             data.put("rate", round(totalSold / totalBought));
             String message = telegramMessageTemplate.load("ampl-tracking-trend.html", data);
             telegramHelper.sendHTMLMessage(message);
