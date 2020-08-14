@@ -32,12 +32,15 @@ public class AmplTrackingTrendingTask {
         Double rateToNoti = settingRepository.findFirstByKey("RATE_TO_NOTI").getValueAsDouble();
         Double totalBought = round(totalBought(timeToTracking.intValue(), 0d));
         Double totalSold = round(totalSold(timeToTracking.intValue(), 0d));
+        Double price = round(getPrice());
         Map<String, Object> data = new HashMap<>();
         data.put("totalBought", totalBought);
         data.put("totalSold", totalSold);
         data.put("timeToTracking", timeToTracking);
+        data.put("price", price);
+        data.put("time", simpleDateTime(new Date()));
         if (totalBought == 0d && totalSold == 0d) return;
-        if(totalBought < 100000d && totalSold < 100000d) return;
+        if(totalBought < 200000d && totalSold < 200000d) return;
         if (totalBought == 0d && totalSold > 0) {
             data.put("trending", "SOLDDDDDD");
             String message = telegramMessageTemplate.load("ampl-tracking-trend.html", data);
@@ -47,6 +50,9 @@ public class AmplTrackingTrendingTask {
             data.put("trending", "BOUGHTTTT");
             String message = telegramMessageTemplate.load("ampl-tracking-trend.html", data);
             telegramHelper.sendHTMLMessage(message);
+        }
+        if(totalBought + totalSold > 500000) {
+            rateToNoti = 1d;
         }
         if (totalBought / totalSold > rateToNoti) {
             data.put("trending", getCirleByRate("\uD83D\uDFE2", (int) (totalBought/totalSold)));
@@ -85,6 +91,11 @@ public class AmplTrackingTrendingTask {
             amount += transactionHistory.getUsdAmount();
         }
         return amount;
+    }
+
+    public Double getPrice() {
+        TransactionHistory transactionHistory = transactionHistoryRepository.findFirstByOrderByCreatedAtDesc();
+        return transactionHistory.getUsdAmount()/transactionHistory.getAmplAmount();
     }
 
     public static Date add(Date date, int unit, int calendar) {

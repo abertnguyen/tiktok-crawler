@@ -59,8 +59,8 @@ public class AmplTrackingTask {
                     if(swapElement.getAmount0In() >= limitNotify || swapElement.getAmount0Out() >= limitNotify) {
                         String type = swapElement.getAmount0In() > 0 ? "Bought" : "Sold";
                         Map<String, Object> data = new HashMap<>();
-                        data.put("type", "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB" + type + "\uD83D\uDCB0");
                         if(type.equalsIgnoreCase("Sold")) {
+                            data.put("type", "\uD83D\uDC79 Sold\uD83D\uDCB0");
                             data.put("amplValue", round(swapElement.getAmount1In()));
                             data.put("ethValue", round(swapElement.getAmount0Out()));
                             String circle = "";
@@ -68,8 +68,12 @@ public class AmplTrackingTask {
                                 circle += "\uD83D\uDD34";
                             }
                             data.put("circle", circle);
-                            data.put("rate", round(swapElement.getAmountUSD()/swapElement.getAmount1In(), 4));
+                            data.put("price", round(swapElement.getAmountUSD()/swapElement.getAmount1In(), 4));
+                            data.put("totalBought", round(totalBought(30, 0d)));
+                            data.put("totalSold", round(totalSold(30, swapElement.getAmountUSD())));
+                            data.put("rate", round(totalSold(30, swapElement.getAmountUSD())/totalBought(30, 0d)));
                         } else {
+                            data.put("type", "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83D\uDCBB Bought \uD83D\uDCB0");
                             data.put("amplValue", round(swapElement.getAmount1Out()));
                             data.put("ethValue", round(swapElement.getAmount0In()));
                             String circle = "";
@@ -77,13 +81,14 @@ public class AmplTrackingTask {
                                 circle += "\uD83D\uDFE2";
                             }
                             data.put("circle", circle);
-                            data.put("rate", round(swapElement.getAmountUSD()/swapElement.getAmount1Out(), 4));
+                            data.put("price", round(swapElement.getAmountUSD()/swapElement.getAmount1Out(), 4));
+                            data.put("totalBought", round(totalBought(30, swapElement.getAmountUSD())));
+                            data.put("totalSold", round(totalSold(30, 0d)));
+                            data.put("rate", round(totalBought(30, swapElement.getAmountUSD())/totalSold(30, 0d)));
                         }
                         data.put("usdValue", round(swapElement.getAmountUSD()));
                         data.put("time", simpleDateTime(new Date(swapElement.getTimestamp() * 1000)));
                         data.put("txId", swapElement.getTransaction().getId());
-                        data.put("totalBought", round(totalBought(30, swapElement.getAmountUSD())));
-                        data.put("totalSold", round(totalSold(30, swapElement.getAmountUSD())));
                         String message = telegramMessageTemplate.load("ampl-tracking.html", data);
                         telegramHelper.sendHTMLMessage(message);
                     }

@@ -18,4 +18,5 @@ import java.util.List;
 @Repository
 public interface TransactionHistoryRepository extends CrudRepository<TransactionHistory, String> {
     List<TransactionHistory> findAllByTypeAndCreatedTimeTxBetween(String type, Date time1, Date time2);
+    TransactionHistory findFirstByOrderByCreatedAtDesc();
 }

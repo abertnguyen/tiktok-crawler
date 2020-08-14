@@ -24,7 +24,7 @@ public class TelegramHelper {
 
     public void sendMessage(String message, String parseMode) {
         try {
-            String url = "https://api.telegram.org/bot1356869800:AAFhDHMUFIBlgnp9FWLzsvy8zNxzufXkWFs/sendMessage?chat_id=-440199512&text={text}";
+            String url = "https://api.telegram.org/bot1356869800:AAFhDHMUFIBlgnp9FWLzsvy8zNxzufXkWFs/sendMessage?chat_id=-1001463101645&text={text}";
             Map<String, String> params = new HashMap<>();
             params.put("text", message);
 
